@@ -59,7 +59,7 @@ cargo run
 ###### ***Important Note on Compilation (for the nerds):*** To bypass a known VirtualBox file-locking bug (`os error 26`), this project uses a `.cargo/config.toml` file to force Rust to output its build artifacts to `/home/vagrant/xerxes-build-target` instead of the local workspace `target/` directory. You will not see a `target/` folder in the project root.
 
 ### Testing the API
-Once `cargo run` is executing, the server will listen on port `8080` inside the virtual machine. 
+Once the `cargo run` is executed, the server will listen on port `8080` inside the virtual machine. 
 
 Vagrant forwards this to port `27272` on your host machine. You can open your standard Windows/Mac web browser or use `curl` to test the endpoints locally:
 
@@ -81,4 +81,4 @@ vagrant halt
 This safely powers down the VM and saves your computer's resources. Use `vagrant up` to instantly resume your work tomorrow.
 
 ## Notes
-- If there is any enquiry about setting up or development process in general, contact me in Discord or drop an email at thienphu.tran@students.mq.edu.au
+- If there is any enquiry about setting up or the development process in general, contact me in Discord or drop an email at thienphu.tran@students.mq.edu.au
