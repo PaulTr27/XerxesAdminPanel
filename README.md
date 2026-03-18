@@ -65,7 +65,7 @@ Vagrant forwards this to port `27272` on your host machine. You can open your st
 
 **Check System Status:**
 ```bash
-curl -X GET [http://127.0.0.1:27272/api/status](http://127.0.0.1:27272/api/status)
+curl -X GET http://127.0.0.1:27272/api/status
 ```
 
 
