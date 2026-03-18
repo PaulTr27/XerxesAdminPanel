@@ -20,7 +20,6 @@ This repository contains the software for the Xerxes Pi carrier board by Rapid A
 Before cloning this repository, ensure your host machine (Windows/Mac) has the following installed:
 1. [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 2. [Vagrant](https://developer.hashicorp.com/vagrant/downloads) (Verify via terminal: `vagrant --version`)
-3. [VSCode](https://code.visualstudio.com/) with the **"Remote - SSH"** extension installed.
 
 ### Step 1: Clone and Boot
 Clone the repository to your local machine and boot the environment.
