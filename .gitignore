@@ -1,19 +1,13 @@
+# Vagrant local state
 .vagrant/
 
-target/
+# Compiled object files and binaries
+*.o
+xerxes_backend
+xerxes_backend_arm64
 
-# Cargo specific files
-**/*.rs.bk
-
-# Editor and IDE configurations
+# Editor and OS generated files
 .vscode/
 .idea/
-
-# OS generated files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db

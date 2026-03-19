@@ -3,14 +3,23 @@
 This repository contains the software for the Xerxes Pi carrier board by Rapid Analysis PTY LTD. 
 
 ### Notes
-- This setup guide is created based on the assumption that we are developing using Rust. 
-- If needed, a C++ version will also be available as soon as Rob confirms.
+- This setup guide is created using C++. 
+- If needed, a Rust version will also be available at `legacy/` folder.
 
 ## Architecture
 
-* **Language:** Rust
+* **Language:** C++
 * **Target Hardware:** ARM64 (Raspberry Pi OS / Debian 13)
 * **Dev Environment:** Vagrant (Debian 13 Trixie)
+
+---
+## Repository Structure
+
+To maintain a clean codebase while still compiling to a single executable, the project is divided into modules:
+
+* `src/`: Contains all implementation files (`.cpp`) for routing, Docker management, and system wrappers.
+* `include/`: Contains all header files (`.h`) defining the contracts between modules.
+* `public/`: Contains the URS-mandated frontend assets (`index.html`, `styles.css`, and `containers.json`).
 
 ---
 
@@ -50,46 +59,53 @@ Because Vagrant automatically syncs this folder, you can edit the code natively 
 ## Development Workflow
 
 ### Compiling and Running
-Open the integrated terminal in VSCode (which is now securely inside the Debian VM) and run:
+From inside the `/workspace` directory in your `vagrant ssh` terminal, compile all modules into a single binary using Make:
 
 ```bash
-cargo run
+make
 ```
 
-###### ***Important Note on Compilation (for the nerds):*** To bypass a known VirtualBox file-locking bug (`os error 26`), this project uses a `.cargo/config.toml` file to force Rust to output its build artifacts to `/home/vagrant/xerxes-build-target` instead of the local workspace `target/` directory. You will not see a `target/` folder in the project root.
+Once compiled, start the server by executing the output binary:
+
+```bash
+./xerxes_backend
+```
+
 
 ### Testing the API
-Once the `cargo run` is executed, the server will listen on port `8080` inside the virtual machine. 
+Once the `./xerxes_backend` is executed, the server will listen on port `8080` inside the virtual machine. 
 
-Vagrant forwards this to port `27272` on your host machine. You can open your standard Windows/Mac web browser or use `curl` to test the endpoints locally:
+Vagrant forwards this to port `7272` on your host machine. You can open your standard Windows/Mac web browser or use `curl` to test the endpoints locally:
 
 **Check System Status:**
 ```bash
-curl -X GET http://127.0.0.1:27272/api/status
+curl -X GET http://127.0.0.1:7272/api/status
 ```
 
 
 ---
 
 ## Shutting Down
-When you are done developing for the day, return to your host terminal (not the VSCode VM terminal) and run:
+When you are done developing for the day, stop the server (`Ctrl+C`), type `exit` to leave the SSH session, then safely power down the VM by running:
 
 ```bash
 vagrant halt
 ```
 
 ## Cross-Compiling for Production (ARM64)
-##### This will not be relevant until later stages of development. Skip this part for now.
-The physical Xerxes Pi utilises a Raspberry Pi CM4/CM5, which runs on an ARM64 architecture. Because your development VM is x86_64, you cannot simply copy your local testing build to the hardware. 
+##### ***Notes***: This will not be relevant until later stages of development. Skip this part for now.
+The physical Xerxes Pi utilizes a Raspberry Pi CM4/CM5, which runs on an ARM64 architecture. Because your development VM simulates x86_64, you cannot simply copy your local testing build to the hardware. 
 
-To build the final, highly optimised executable for the actual hardware, you must cross-compile. From inside the `/workspace` directory in your `vagrant ssh` terminal, run:
+To build the final executable for the actual hardware, you must cross-compile. We can override the default compiler in our Makefile by passing the ARM64 GCC compiler:
 
 ```bash
-cargo build --target aarch64-unknown-linux-gnu --release
+make CXX=aarch64-linux-gnu-g++ TARGET=xerxes_backend_arm64
 ```
-Output Location: The compiled, deployment-ready binary will be located on the Linux VM at:
-/home/vagrant/xerxes-build-target/aarch64-unknown-linux-gnu/release/xerxes_admin_panel
-This safely powers down the VM and saves your computer's resources. Use `vagrant up` to instantly resume your work tomorrow.
+
+You can then securely copy the resulting `xerxes_backend_arm64` file directly to your physical Xerxes Pi board for deployment.
 
 ## Notes
+- There will be some differences between Macbook and Windows machines in the setting up process. If this setup guide does not work for you, contact me immediately so we can all progress.
 - If there is any enquiry about setting up or the development process in general, contact me in Discord or drop an email at thienphu.tran@students.mq.edu.au
+
+

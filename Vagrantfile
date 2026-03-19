@@ -7,32 +7,35 @@ Vagrant.configure("2") do |config|
   config.vm.box_version = "202510.26.0"
 
   # 2. Networking: Forward port 8080 to the host machine.
-  # When your backend runs in the VM, you can view it at http://localhost:27272 on your native browser.
-  config.vm.network "forwarded_port", guest: 8080, host: 27272
+  # When your backend runs in the VM, you can view it at http://localhost:7272 on your native browser.
+  config.vm.network "forwarded_port", guest: 8080, host: 7272
 
   # 3. File Sharing: Map the host project folder to /workspace inside the VM.
   config.vm.synced_folder ".", "/workspace"
 
   # 4. VM Hardware Configuration (VirtualBox)
   config.vm.provider "virtualbox" do |vb|
-    vb.name = "xerxes-pi-dev-env"
+    vb.name = "xerxes-pi-dev-env-cpp"
     vb.memory = "2048" # 2GB RAM
     vb.cpus = 4 # Quadcore to simulate CM5 module
   end
 
-  # 5. Automated Provisioning: Install all required system tools and Rust
+  # Automated Provisioning: URS Compliant C++ Toolset
   config.vm.provision "shell", inline: <<-SHELL
-    # Stop apt from showing interactive dialogs during the automated install
-export DEBIAN_FRONTEND=noninteractive
+    export DEBIAN_FRONTEND=noninteractive
 
     echo "Updating apt repositories..."
     apt-get update -y
 
-    echo "Installing core tools, Samba, Docker, Nmap, and ARM Cross-Compiler..."
-    apt-get install -y build-essential curl git wget samba docker.io nmap gcc-aarch64-linux-gnu
+    echo "Installing core C++ tools, Samba, Docker, Nmap, and ARM Cross-Compiler..."
+    apt-get install -y build-essential gdb curl git wget samba docker.io nmap gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
     # Allow the vagrant user to run Docker without sudo
     usermod -aG docker vagrant
+
+    echo "Installing header-only C++ libraries globally..."
+    wget -q https://raw.githubusercontent.com/yhirose/cpp-httplib/master/httplib.h -O /usr/local/include/httplib.h
+    wget -q https://raw.githubusercontent.com/nlohmann/json/develop/single_include/nlohmann/json.hpp -O /usr/local/include/json.hpp
 
     echo "Installing Tailscale..."
     curl -fsSL https://tailscale.com/install.sh | sh
@@ -44,16 +47,11 @@ export DEBIAN_FRONTEND=noninteractive
       | sudo tee /etc/apt/sources.list.d/ngrok.list \
       && sudo apt update && sudo apt install ngrok
 
-    echo "Installing Rust & ARM64 Target..."
-    su - vagrant -c "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
-    # Add the target architecture for the Raspberry Pi CM4/CM5
-    su - vagrant -c "/home/vagrant/.cargo/bin/rustup target add aarch64-unknown-linux-gnu"
-
-    
     echo "======================================================"
-    echo " Xerxes Pi Vagrant Environment is Ready!"
-    echo " 1. Type 'vagrant ssh' to enter the machine."
-    echo " 2. Navigate to 'cd /workspace' to see your code."
+    echo " Xerxes Pi C++ Vagrant Environment is URS Compliant!"
+    echo " 1. Type 'vagrant ssh' to enter."
+    echo " 2. Navigate to 'cd /workspace'."
     echo "======================================================"
   SHELL
 end
+
