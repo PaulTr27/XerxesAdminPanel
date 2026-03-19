@@ -19,7 +19,7 @@ To maintain a clean codebase while still compiling to a single executable, the p
 
 * `src/`: Contains all implementation files (`.cpp`) for routing, Docker management, and system wrappers.
 * `include/`: Contains all header files (`.h`) defining the contracts between modules.
-* `public/`: Contains the URS-mandated frontend assets (`index.html`, `styles.css`, and `containers.json`).
+* `public/`: Contains the frontend assets (`index.html`, `styles.css`, and `containers.json`).
 
 ---
 
