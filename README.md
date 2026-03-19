@@ -79,7 +79,7 @@ Vagrant forwards this to port `7272` on your host machine. You can open your sta
 
 **Check System Status:**
 ```bash
-curl -X GET http://127.0.0.1:7272/api/status
+curl -X GET http://127.0.0.1:7272/
 ```
 
 
