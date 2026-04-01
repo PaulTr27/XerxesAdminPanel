@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xerxes Pi — Admin Panel</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ── TOP NAVIGATION BAR ── -->
+  <header class="navbar">
+    <div class="navbar-brand">
+      <span class="brand-mark">X</span>
+      <div class="brand-text">
+        <span class="brand-title" data-i18n="app_title">Xerxes Pi</span>
+        <span class="brand-sub" data-i18n="app_subtitle">Administration Panel</span>
+      </div>
+    </div>
+
+    <nav class="navbar-nav">
+      <a href="#dashboard" class="nav-link active" data-i18n="nav_dashboard">Dashboard</a>
+      <a href="#commands" class="nav-link" data-i18n="nav_commands">Commands</a>
+      <a href="#network" class="nav-link" data-i18n="nav_network">Network</a>
+      <a href="#docker" class="nav-link" data-i18n="nav_docker">Docker</a>
+    </nav>
+
+    <div class="navbar-actions">
+      <!-- Status pill -->
+      <div class="status-pill" id="status-pill">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-label" data-i18n="status_checking">Checking...</span>
+      </div>
+      <!-- Dark / Light toggle -->
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <span id="theme-label">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="content">
+
+    <!-- ── DASHBOARD SECTION ── -->
+    <section id="dashboard" class="section">
+      <h2 class="section-title" data-i18n="nav_dashboard">Dashboard</h2>
+
+      <!-- System info cards -->
+      <div class="card-grid">
+        <div class="card">
+          <span class="card-label" data-i18n="card_hostname">Hostname</span>
+          <span class="card-value" id="val-hostname">—</span>
+        </div>
+        <div class="card">
+          <span class="card-label" data-i18n="card_uptime">Uptime</span>
+          <span class="card-value" id="val-uptime">—</span>
+        </div>
+        <div class="card">
+          <span class="card-label" data-i18n="card_disk">Disk Usage</span>
+          <span class="card-value" id="val-disk">—</span>
+        </div>
+        <div class="card">
+          <span class="card-label" data-i18n="card_ip">IP Address</span>
+          <span class="card-value" id="val-ip">—</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ── COMMANDS SECTION ── -->
+    <section id="commands" class="section">
+      <h2 class="section-title" data-i18n="section_commands">System Commands</h2>
+      <p class="section-desc" data-i18n="section_commands_desc">
+        Execute predefined system operations safely.
+      </p>
+
+      <div class="command-grid">
+        <button class="cmd-btn" data-command="disk_usage" data-i18n="cmd_disk_usage">Disk Usage</button>
+        <button class="cmd-btn" data-command="uptime" data-i18n="cmd_uptime">System Uptime</button>
+        <button class="cmd-btn" data-command="network_info" data-i18n="cmd_network_info">Network Info</button>
+        <button class="cmd-btn" data-command="memory" data-i18n="cmd_memory">Memory Usage</button>
+        <button class="cmd-btn" data-command="processes" data-i18n="cmd_processes">Top Processes</button>
+        <button class="cmd-btn" data-command="port_scan" data-i18n="cmd_port_scan">Port Scan</button>
+      </div>
+
+      <!-- Output panel -->
+      <div class="output-panel">
+        <div class="output-header">
+          <span data-i18n="output_title">Output</span>
+          <button class="clear-btn" id="clear-output">Clear</button>
+        </div>
+        <pre class="output-body" id="output-body">Command output will appear here...</pre>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ── NETWORK SECTION (placeholder) ── -->
+    <section id="network" class="section">
+      <h2 class="section-title" data-i18n="nav_network">Network</h2>
+      <p class="section-desc placeholder-note">Network configuration — coming soon.</p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ── DOCKER SECTION (placeholder) ── -->
+    <section id="docker" class="section">
+      <h2 class="section-title" data-i18n="nav_docker">Docker</h2>
+      <p class="section-desc placeholder-note">Container management — coming soon.</p>
+    </section>
+
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <span data-i18n="footer_version">v0.1.0 — Rapid Analysis PTY LTD</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
