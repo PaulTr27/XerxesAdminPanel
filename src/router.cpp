@@ -1,8 +1,7 @@
 #include "router.h"
+#include "system_ops.h"
 #include "json.hpp"
 #include <iostream>
-
-using json = nlohmann::json;
 
 // Helper: adds CORS headers so the frontend JS can call the API
 static void set_cors_headers(httplib::Response& res) {
@@ -25,7 +24,7 @@ void setup_routes(httplib::Server& svr) {
     svr.Get("/api/status", [](const httplib::Request&, httplib::Response& res) {
         set_cors_headers(res);
 
-        json response = {
+        nlohmann::json response = {
             {"status", "online"},
             {"message", "Xerxes Pi Admin Backend is running"}
         };
@@ -38,34 +37,52 @@ void setup_routes(httplib::Server& svr) {
     // Accepts a JSON body: { "command": "disk_usage" }
     // Passes the command name to the Command Module (system_ops) for
     // validation and safe execution. Returns stdout/stderr as JSON.
-    // Placeholder response until system_ops.cpp is implemented.
     // ------------------------------------------------------------------
     svr.Post("/api/command", [](const httplib::Request& req, httplib::Response& res) {
         set_cors_headers(res);
 
         try {
-            json body = json::parse(req.body);
+            nlohmann::json body = nlohmann::json::parse(req.body);
             std::string command_name = body.value("command", "");
 
             std::cout << "[Command Request] command=" << command_name << "\n";
 
-            // TODO: pass command_name to system_ops::run_command() once implemented
-            json response = {
-                {"status", "pending"},
+            std::string output = system_ops::run_command(command_name);
+
+            nlohmann::json response = {
+                {"status", "ok"},
                 {"command", command_name},
-                {"message", "Command module not yet implemented"}
+                {"output", output}
             };
 
             res.set_content(response.dump(), "application/json");
 
         } catch (const std::exception& e) {
-            json error = {
+            nlohmann::json error = {
                 {"status", "error"},
                 {"message", "Invalid request body"}
             };
             res.status = 400;
             res.set_content(error.dump(), "application/json");
         }
+    });
+
+    // ------------------------------------------------------------------
+    // GET /api/dashboard
+    // Returns the four status card values in a single JSON response.
+    // Called by the frontend on page load to populate the dashboard.
+    // ------------------------------------------------------------------
+    svr.Get("/api/dashboard", [](const httplib::Request&, httplib::Response& res) {
+        set_cors_headers(res);
+
+        nlohmann::json response = {
+            {"hostname", system_ops::get_hostname()},
+            {"uptime",   system_ops::get_uptime()},
+            {"disk",     system_ops::get_disk_usage()},
+            {"ip",       system_ops::get_ip_address()}
+        };
+
+        res.set_content(response.dump(), "application/json");
     });
 
     // ------------------------------------------------------------------

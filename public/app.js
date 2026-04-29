@@ -144,5 +144,32 @@ clearBtn.addEventListener("click", function () {
   outputBody.textContent = "Command output will appear here...";
 });
 
+/* ── DASHBOARD CARDS ── */
+// Calls /api/dashboard on load and populates the four status cards
+function loadDashboard() {
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", API_BASE + "/api/dashboard", true);
+  xhr.timeout = 6000;
+
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      try {
+        var data = JSON.parse(xhr.responseText);
+        if (data.hostname) document.getElementById("val-hostname").textContent = data.hostname;
+        if (data.uptime)   document.getElementById("val-uptime").textContent   = data.uptime;
+        if (data.disk)     document.getElementById("val-disk").textContent     = data.disk;
+        if (data.ip)       document.getElementById("val-ip").textContent       = data.ip;
+      } catch (e) {
+        console.warn("Dashboard parse error:", e);
+      }
+    }
+  };
+
+  xhr.onerror   = function () { console.warn("Dashboard fetch failed."); };
+  xhr.ontimeout = function () { console.warn("Dashboard fetch timed out."); };
+  xhr.send();
+}
+
 /* ── INIT ── */
 loadLang();
+loadDashboard();
