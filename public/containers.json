@@ -1,0 +1,21 @@
+{
+  "apps": [
+    {
+      "id": "nginx",
+      "name": "Nginx Web Server",
+      "image": "nginx:latest",
+      "containerName": "xerxes-nginx",
+      "ports": ["8080:80"],
+      "volumes": [
+        {
+          "hostPath": "./public/docker/html",
+          "containerPath": "/usr/share/nginx/html",
+          "readOnly": true
+        }
+      ],
+      "memory": "256m",
+      "cpus": "0.5",
+      "restart": "unless-stopped"
+    }
+  ]
+}

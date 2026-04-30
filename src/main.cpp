@@ -1,8 +1,7 @@
-#include <iostream>
 #include "httplib.h"
 #include "router.h"
 
-#define PORT 8080
+#define PORT 5050
 
 int main() {
     httplib::Server svr;
