@@ -1,10 +1,14 @@
 #include <iostream>
 #include "httplib.h"
 #include "router.h"
+#include "system_ops.h"
 
 #define PORT 8080
 
 int main() {
+    // Initialize system operations and command wrapper
+    system_ops::initialize();
+
     httplib::Server svr;
 
     // Register all routes defined in router.cpp
