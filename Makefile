@@ -1,6 +1,6 @@
 # Compiler and Flags
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -O2 -Iinclude
+CXXFLAGS = -std=c++11 -Wall -O2 -Iinclude -pthread
 
 # Output binary name
 TARGET = xerxes_backend

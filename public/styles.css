@@ -295,6 +295,178 @@ body {
   word-break: break-word;
 }
 
+/* ── DANGER ZONE (reboot / shutdown) ── */
+.danger-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+}
+
+.danger-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.danger-btns { display: flex; gap: 10px; }
+
+.danger-btn {
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.danger-btn:hover {
+  border-color: #ff9500;
+  color: #ff9500;
+}
+
+.danger-btn--shutdown:hover {
+  border-color: var(--status-off);
+  color: var(--status-off);
+}
+
+/* ── CONTROL CARDS (Network / Tunnels) ── */
+/* Intentionally matches .card style for visual consistency */
+.control-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  display: block;  /* ensure block layout even if browser quirks */
+}
+
+.control-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.control-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.control-card-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 10px;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+/* ── SERVICE BADGES ── */
+.service-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  text-transform: lowercase;
+}
+
+.badge-active   { border-color: var(--status-on);  color: var(--status-on); }
+.badge-inactive { border-color: var(--border);      color: var(--text-secondary); }
+.badge-failed   { border-color: var(--status-off);  color: var(--status-off); }
+.badge-neutral  { border-color: var(--border);      color: var(--text-secondary); }
+
+/* ── INPUT ROW (hostname rename) ── */
+.input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.text-input {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.text-input:focus { border-color: var(--accent); }
+
+.action-btn {
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.action-btn:hover { opacity: 0.8; }
+
+/* ── SECONDARY BUTTON (reset / cancel style) ── */
+.secondary-btn {
+  padding: 9px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.secondary-btn:hover {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+.control-feedback {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  min-height: 18px;
+}
+
+.control-feedback.success { color: var(--status-on); }
+.control-feedback.error   { color: var(--status-off); }
+
+/* ── BTN ROW (service controls) ── */
+.btn-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 /* ── FOOTER ── */
 .footer {
   text-align: center;
