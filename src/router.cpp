@@ -86,6 +86,56 @@ void setup_routes(httplib::Server& svr) {
     });
 
     // ------------------------------------------------------------------
+    // POST /api/hostname
+    // Accepts { "hostname": "new-name" } and renames the device.
+    // Validation is handled inside system_ops::set_hostname().
+    // ------------------------------------------------------------------
+    svr.Post("/api/hostname", [](const httplib::Request& req, httplib::Response& res) {
+        set_cors_headers(res);
+
+        try {
+            nlohmann::json body = nlohmann::json::parse(req.body);
+            std::string new_hostname = body.value("hostname", "");
+
+            std::cout << "[Hostname Request] new=" << new_hostname << "\n";
+
+            std::string result = system_ops::set_hostname(new_hostname);
+
+            nlohmann::json response = {
+                {"status", "ok"},
+                {"output", result}
+            };
+
+            res.set_content(response.dump(), "application/json");
+
+        } catch (const std::exception& e) {
+            nlohmann::json error = {
+                {"status", "error"},
+                {"message", "Invalid request body"}
+            };
+            res.status = 400;
+            res.set_content(error.dump(), "application/json");
+        }
+    });
+
+    // ------------------------------------------------------------------
+    // GET /api/services
+    // Returns active/inactive status of smbd, tailscaled, and ngrok.
+    // Called on page load and after service control commands.
+    // ------------------------------------------------------------------
+    svr.Get("/api/services", [](const httplib::Request&, httplib::Response& res) {
+        set_cors_headers(res);
+
+        nlohmann::json response = {
+            {"smbd",       system_ops::get_service_status("smbd")},
+            {"tailscaled", system_ops::get_service_status("tailscaled")},
+            {"ngrok",      system_ops::get_service_status("ngrok")}
+        };
+
+        res.set_content(response.dump(), "application/json");
+    });
+
+    // ------------------------------------------------------------------
     // OPTIONS /* (preflight handler for CORS)
     // Browsers send an OPTIONS request before POST — this handles that.
     // ------------------------------------------------------------------
