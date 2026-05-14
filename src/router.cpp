@@ -1,5 +1,6 @@
 #include "router.h"
 #include "system_ops.h"
+#include "docker_manager.h"
 #include "json.hpp"
 #include <iostream>
 
@@ -44,10 +45,25 @@ void setup_routes(httplib::Server& svr) {
         try {
             nlohmann::json body = nlohmann::json::parse(req.body);
             std::string command_name = body.value("command", "");
+            std::string param        = body.value("param",   "");
 
-            std::cout << "[Command Request] command=" << command_name << "\n";
+            std::cout << "[Command Request] command=" << command_name;
+            if (!param.empty()) std::cout << " param=" << param;
+            std::cout << "\n";
 
-            std::string output = system_ops::run_command(command_name);
+            std::string output;
+
+            // Docker and container commands go through CommandWrapper (supports params + role checks)
+            if (command_name.rfind("docker_", 0) == 0 || command_name.rfind("container_", 0) == 0) {
+                CommandResult result = system_ops::execute_command(command_name, param, user_role::ADMIN);
+                if (result.success) {
+                    output = result.output.empty() ? "[ok] Command completed." : result.output;
+                } else {
+                    output = "[error] " + result.error;
+                }
+            } else {
+                output = system_ops::run_command(command_name);
+            }
 
             nlohmann::json response = {
                 {"status", "ok"},
@@ -133,6 +149,73 @@ void setup_routes(httplib::Server& svr) {
         };
 
         res.set_content(response.dump(), "application/json");
+    });
+
+    // ------------------------------------------------------------------
+    // POST /api/docker/run
+    // Accepts a structured JSON body describing a docker run invocation.
+    // Each field is validated independently before the command is built.
+    //
+    // Body shape:
+    //   {
+    //     "image":   "nginx:latest",          // required
+    //     "name":    "my-nginx",              // optional
+    //     "ports":   ["8080:80"],             // optional
+    //     "volumes": ["/host/path:/ctr/path"],// optional
+    //     "env":     ["KEY=value"],           // optional
+    //     "restart": "unless-stopped",        // optional
+    //     "detach":  true                     // optional, default true
+    //   }
+    // ------------------------------------------------------------------
+    svr.Post("/api/docker/run", [](const httplib::Request& req, httplib::Response& res) {
+        set_cors_headers(res);
+
+        try {
+            nlohmann::json body = nlohmann::json::parse(req.body);
+
+            DockerRunConfig config;
+            config.image   = body.value("image",   "");
+            config.name    = body.value("name",    "");
+            config.restart = body.value("restart", "");
+            config.detach  = body.value("detach",  true);
+
+            if (body.contains("ports") && body["ports"].is_array())
+                for (const auto& p : body["ports"])
+                    config.ports.push_back(p.get<std::string>());
+
+            if (body.contains("volumes") && body["volumes"].is_array())
+                for (const auto& v : body["volumes"])
+                    config.volumes.push_back(v.get<std::string>());
+
+            if (body.contains("env") && body["env"].is_array())
+                for (const auto& e : body["env"])
+                    config.env.push_back(e.get<std::string>());
+
+            std::cout << "[Docker Run] image=" << config.image
+                      << " name="    << config.name
+                      << " ports="   << config.ports.size()
+                      << " volumes=" << config.volumes.size()
+                      << " env="     << config.env.size() << "\n";
+
+            DockerRunResult result = docker_manager::run(config);
+
+            nlohmann::json response = {
+                {"status",  result.success ? "ok" : "error"},
+                {"output",  result.output},
+                {"error",   result.error}
+            };
+
+            res.status = result.success ? 200 : 400;
+            res.set_content(response.dump(), "application/json");
+
+        } catch (const std::exception& e) {
+            nlohmann::json error = {
+                {"status",  "error"},
+                {"message", "Invalid request body"}
+            };
+            res.status = 400;
+            res.set_content(error.dump(), "application/json");
+        }
     });
 
     // ------------------------------------------------------------------
