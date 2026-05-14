@@ -248,12 +248,17 @@ bool CommandWrapper::validate_params(const CommandEntry& entry,
     std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
     
     // Block suspicious patterns
-    const char* dangerous[] = {" && ", " || ", "; ", "| ", "`", "$(", "${", 
-                             "\n", "\r", "\0", "../", "..\\"};
+    const char* dangerous[] = {" && ", " || ", "; ", "| ", "`", "$(", "${",
+                               "\n", "\r", "../", "..\\"};
     for (const char* pattern : dangerous) {
         if (lower.find(pattern) != std::string::npos) {
             return false;
         }
+    }
+    // Check for null bytes separately — find("\0") uses strlen which gives 0,
+    // making it match every string. Use find(char) instead.
+    if (params.find('\0') != std::string::npos) {
+        return false;
     }
     
     // 4. Check for path traversal attempts
