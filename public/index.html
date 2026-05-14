@@ -196,7 +196,8 @@
         </div>
         <p class="control-card-desc" data-i18n="docker_overview_desc">View running containers, available images, and live resource usage.</p>
         <div class="btn-row">
-          <button class="cmd-btn docker-btn" data-docker-command="docker_ps"     data-i18n="docker_btn_ps">List Containers</button>
+          <button class="cmd-btn docker-btn" data-docker-command="docker_ps"      data-i18n="docker_btn_ps">List Running</button>
+          <button class="cmd-btn docker-btn" data-docker-command="docker_ps_all"  data-i18n="docker_btn_ps_all">List All</button>
           <button class="cmd-btn docker-btn" data-docker-command="docker_images"  data-i18n="docker_btn_images">List Images</button>
           <button class="cmd-btn docker-btn" data-docker-command="docker_stats"   data-i18n="docker_btn_stats">Show Stats</button>
         </div>
@@ -217,6 +218,7 @@
           <button class="cmd-btn docker-btn" data-docker-command="container_stop"    data-needs-name="true" data-i18n="docker_btn_stop">Stop</button>
           <button class="cmd-btn docker-btn" data-docker-command="container_restart" data-needs-name="true" data-i18n="docker_btn_restart">Restart</button>
           <button class="cmd-btn docker-btn" data-docker-command="container_logs"    data-needs-name="true" data-i18n="docker_btn_logs">View Logs</button>
+          <button class="cmd-btn docker-btn" data-docker-command="container_remove"  data-needs-name="true" data-confirm="true" data-i18n="docker_btn_remove">Remove</button>
         </div>
         <div class="control-feedback" id="docker-feedback"></div>
       </div>

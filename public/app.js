@@ -263,11 +263,16 @@ document.querySelectorAll(".docker-btn").forEach(function (btn) {
   btn.addEventListener("click", function () {
     var command   = btn.getAttribute("data-docker-command");
     var needsName = btn.getAttribute("data-needs-name") === "true";
+    var needsConfirm = btn.getAttribute("data-confirm") === "true";
     var name      = document.getElementById("container-input").value.trim();
 
     if (needsName && !name) {
       showFeedback(dockerFeedback, "Please enter a container name.", "error");
       document.getElementById("container-input").focus();
+      return;
+    }
+
+    if (needsConfirm && !confirm("Remove container \"" + name + "\"? This cannot be undone.")) {
       return;
     }
 

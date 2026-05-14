@@ -11,6 +11,9 @@ Vagrant.configure("2") do |config|
   # Additionally, forward port 8081 for any additional services you may want to run.
   config.vm.network "forwarded_port", guest: 8080, host: 7272
   config.vm.network "forwarded_port", guest: 8081, host: 8081
+  config.vm.network "forwarded_port", guest: 8082, host: 8082
+  config.vm.network "forwarded_port", guest: 8083, host: 8083
+  config.vm.network "forwarded_port", guest: 8084, host: 8084
 
   # 3. File Sharing: Map the host project folder to /workspace inside the VM.
   config.vm.synced_folder ".", "/workspace"
