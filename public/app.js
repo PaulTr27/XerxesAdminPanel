@@ -129,7 +129,7 @@ function updateBadge(id, status) {
 var outputBody = document.getElementById("output-body");
 var clearBtn   = document.getElementById("clear-output");
 
-document.querySelectorAll(".cmd-btn").forEach(function (btn) {
+document.querySelectorAll(".cmd-btn:not(.docker-btn)").forEach(function (btn) {
   btn.addEventListener("click", function () {
     runCommand(btn.getAttribute("data-command"));
   });
@@ -170,7 +170,7 @@ function runCommand(command) {
 }
 
 function resetButtons() {
-  document.querySelectorAll(".cmd-btn").forEach(function (b) {
+  document.querySelectorAll(".cmd-btn:not(.docker-btn)").forEach(function (b) {
     b.classList.remove("running");
     b.disabled = false;
   });
@@ -254,6 +254,218 @@ document.getElementById("btn-shutdown").addEventListener("click", function () {
     runCommand("shutdown");
   }
 });
+
+/* ── DOCKER ── */
+var dockerOutput   = document.getElementById("docker-output-body");
+var dockerFeedback = document.getElementById("docker-feedback");
+
+document.querySelectorAll(".docker-btn").forEach(function (btn) {
+  btn.addEventListener("click", function () {
+    var command   = btn.getAttribute("data-docker-command");
+    var needsName = btn.getAttribute("data-needs-name") === "true";
+    var name      = document.getElementById("container-input").value.trim();
+
+    if (needsName && !name) {
+      showFeedback(dockerFeedback, "Please enter a container name.", "error");
+      document.getElementById("container-input").focus();
+      return;
+    }
+
+    showFeedback(dockerFeedback, "", "");
+    runDockerCommand(command, needsName ? name : "");
+  });
+});
+
+function runDockerCommand(command, param) {
+  document.querySelectorAll(".docker-btn").forEach(function (b) {
+    b.classList.add("running");
+    b.disabled = true;
+  });
+
+  dockerOutput.textContent = "Running: " + command + (param ? " " + param : "") + "...\n";
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", API_BASE + "/api/command", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.timeout = (command === "container_restart") ? 65000 : 20000;
+
+  xhr.onload = function () {
+    try {
+      var data = JSON.parse(xhr.responseText);
+      dockerOutput.textContent = data.output || data.message || xhr.responseText;
+    } catch (e) {
+      dockerOutput.textContent = xhr.responseText;
+    }
+    resetDockerButtons();
+  };
+
+  xhr.onerror   = function () { dockerOutput.textContent = "Error: Could not reach the backend."; resetDockerButtons(); };
+  xhr.ontimeout = function () { dockerOutput.textContent = "Error: Request timed out."; resetDockerButtons(); };
+
+  var payload = { command: command };
+  if (param) payload.param = param;
+  xhr.send(JSON.stringify(payload));
+}
+
+function resetDockerButtons() {
+  document.querySelectorAll(".docker-btn").forEach(function (b) {
+    b.classList.remove("running");
+    b.disabled = false;
+  });
+}
+
+document.getElementById("clear-docker-output").addEventListener("click", function () {
+  dockerOutput.textContent = "Docker output will appear here...";
+});
+
+/* ── RUN CONTAINER FORM ── */
+var runFeedback = document.getElementById("run-feedback");
+
+// ── Dynamic row builders ──────────────────────────────────────────────────────
+
+function makeDynamicRow(list, innerHtml) {
+  var row = document.createElement("div");
+  row.className = "dynamic-row";
+  row.innerHTML = innerHtml;
+  row.querySelector(".remove-btn").addEventListener("click", function () {
+    list.removeChild(row);
+  });
+  list.appendChild(row);
+  return row;
+}
+
+document.getElementById("add-port-btn").addEventListener("click", function () {
+  var list = document.getElementById("port-list");
+  makeDynamicRow(list,
+    '<input class="text-input" type="text" placeholder="8080" maxlength="5" />' +
+    '<span class="row-sep">:</span>' +
+    '<input class="text-input" type="text" placeholder="80" maxlength="5" />' +
+    '<button class="remove-btn" type="button" aria-label="Remove">&times;</button>'
+  );
+});
+
+document.getElementById("add-volume-btn").addEventListener("click", function () {
+  var list = document.getElementById("volume-list");
+  makeDynamicRow(list,
+    '<input class="text-input" type="text" placeholder="/host/path" />' +
+    '<span class="row-sep">:</span>' +
+    '<input class="text-input" type="text" placeholder="/container/path" />' +
+    '<select class="select-input select-input--narrow">' +
+      '<option value="">rw</option>' +
+      '<option value="ro">ro</option>' +
+    '</select>' +
+    '<button class="remove-btn" type="button" aria-label="Remove">&times;</button>'
+  );
+});
+
+document.getElementById("add-env-btn").addEventListener("click", function () {
+  var list = document.getElementById("env-list");
+  makeDynamicRow(list,
+    '<input class="text-input" type="text" placeholder="KEY" />' +
+    '<span class="row-sep">=</span>' +
+    '<input class="text-input" type="text" placeholder="value" />' +
+    '<button class="remove-btn" type="button" aria-label="Remove">&times;</button>'
+  );
+});
+
+// ── Form collection + submission ─────────────────────────────────────────────
+
+document.getElementById("run-container-btn").addEventListener("click", function () {
+  var image = document.getElementById("run-image").value.trim();
+  if (!image) {
+    showFeedback(runFeedback, "Image name is required.", "error");
+    document.getElementById("run-image").focus();
+    return;
+  }
+
+  var payload = {
+    image:   image,
+    name:    document.getElementById("run-name").value.trim(),
+    restart: document.getElementById("run-restart").value,
+    detach:  true,
+    ports:   [],
+    volumes: [],
+    env:     []
+  };
+
+  // Collect port rows — skip incomplete rows silently
+  document.querySelectorAll("#port-list .dynamic-row").forEach(function (row) {
+    var inputs = row.querySelectorAll("input");
+    var host = inputs[0].value.trim();
+    var ctr  = inputs[1].value.trim();
+    if (host && ctr) payload.ports.push(host + ":" + ctr);
+  });
+
+  // Collect volume rows
+  document.querySelectorAll("#volume-list .dynamic-row").forEach(function (row) {
+    var inputs = row.querySelectorAll("input");
+    var sel    = row.querySelector("select");
+    var host = inputs[0].value.trim();
+    var ctr  = inputs[1].value.trim();
+    if (host && ctr) {
+      payload.volumes.push(host + ":" + ctr + (sel.value ? ":" + sel.value : ""));
+    }
+  });
+
+  // Collect env rows
+  document.querySelectorAll("#env-list .dynamic-row").forEach(function (row) {
+    var inputs = row.querySelectorAll("input");
+    var key = inputs[0].value.trim();
+    var val = inputs[1].value.trim();
+    if (key) payload.env.push(key + "=" + val);
+  });
+
+  submitRunContainer(payload);
+});
+
+function submitRunContainer(payload) {
+  var btn = document.getElementById("run-container-btn");
+  btn.disabled    = true;
+  btn.textContent = "Pulling & starting...";
+  showFeedback(runFeedback, "", "");
+  dockerOutput.textContent = "Running: docker run " + payload.image + "...\n" +
+                             "This may take a while if the image needs to be pulled.\n";
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", API_BASE + "/api/docker/run", true);
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.timeout = 300000; // 5 minutes — image pulls can be slow
+
+  xhr.onload = function () {
+    try {
+      var data = JSON.parse(xhr.responseText);
+      if (data.status === "ok") {
+        dockerOutput.textContent = data.output || "[ok] Container started.";
+        showFeedback(runFeedback, "Container started successfully.", "success");
+      } else {
+        dockerOutput.textContent = data.error || data.output || xhr.responseText;
+        showFeedback(runFeedback, data.error || "Failed to start container.", "error");
+      }
+    } catch (e) {
+      dockerOutput.textContent = xhr.responseText;
+      showFeedback(runFeedback, "Unexpected response from backend.", "error");
+    }
+    btn.disabled    = false;
+    btn.textContent = "Run Container";
+  };
+
+  xhr.onerror = function () {
+    dockerOutput.textContent = "Error: Could not reach the backend.";
+    showFeedback(runFeedback, "Could not reach the backend.", "error");
+    btn.disabled    = false;
+    btn.textContent = "Run Container";
+  };
+
+  xhr.ontimeout = function () {
+    dockerOutput.textContent = "Request timed out — the image may still be pulling in the background.\n" +
+                               "Use List Containers to check if it started.";
+    showFeedback(runFeedback, "Request timed out.", "error");
+    btn.disabled    = false;
+    btn.textContent = "Run Container";
+  };
+
+  xhr.send(JSON.stringify(payload));
+}
 
 /* ── INIT ── */
 loadLang();

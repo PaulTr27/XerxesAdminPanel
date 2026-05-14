@@ -98,7 +98,7 @@ void CommandWrapper::initialize_defaults() {
                 "Show routing table", 10, {}});
     
     // Docker commands
-    add_command({"docker_ps", "docker ps --format table", command_cat::DOCKER, false, 
+    add_command({"docker_ps", "docker ps -a --format table", command_cat::DOCKER, false,
                 "List containers", 20, {}});
     add_command({"docker_images", "docker images", command_cat::DOCKER, false, 
                 "List images", 20, {}});
@@ -112,8 +112,8 @@ void CommandWrapper::initialize_defaults() {
                 "Stop a container", 30, {}});
     add_command({"container_start", "docker start", command_cat::CONTAINER, true, 
                 "Start a container", 30, {}});
-    add_command({"container_logs", "docker logs", command_cat::CONTAINER, false, 
-                "View container logs", 30, {"50", "100", "200"}});
+    add_command({"container_logs", "docker logs --tail 100", command_cat::CONTAINER, false,
+                "View container logs", 30, {}});
     
 // Admin commands
     add_command({"reboot", "systemctl reboot", command_cat::ADMIN, true, 
